@@ -8,3 +8,5 @@ Thumbs.db
 dist/
 
 start2code-5aa08-69c8fa59380e.json
+.vercel
+.env*
