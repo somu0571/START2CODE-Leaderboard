@@ -1,17 +1,16 @@
+const { Octokit } = require('@octokit/rest');
 const repoConfig = require('../config/repo');
 
-let octokitPromise = null;
+let octokit = null;
 
-async function getOctokit() {
-  if (!octokitPromise) {
-    octokitPromise = import('@octokit/rest').then(({ Octokit }) => {
-      return new Octokit({
-        auth: repoConfig.token || undefined,
-        userAgent: 'START2CODE/1.0'
-      });
+function getOctokit() {
+  if (!octokit) {
+    octokit = new Octokit({
+      auth: repoConfig.token || undefined,
+      userAgent: 'START2CODE/1.0'
     });
   }
-  return octokitPromise;
+  return octokit;
 }
 
 const cache = new Map();
@@ -36,8 +35,7 @@ async function getRepoInfo() {
   if (cached) return cached;
 
   try {
-    const octokit = await getOctokit();
-    const { data } = await octokit.repos.get({
+    const { data } = await getOctokit().repos.get({
       owner: repoConfig.owner,
       repo: repoConfig.name
     });
@@ -71,8 +69,7 @@ async function getRepoLanguages() {
   if (cached) return cached;
 
   try {
-    const octokit = await getOctokit();
-    const { data } = await octokit.repos.listLanguages({
+    const { data } = await getOctokit().repos.listLanguages({
       owner: repoConfig.owner,
       repo: repoConfig.name
     });
@@ -89,8 +86,6 @@ async function getOpenIssues(labels = '', perPage = 10) {
   if (cached) return cached;
 
   try {
-    const octokit = await getOctokit();
-
     const params = {
       owner: repoConfig.owner,
       repo: repoConfig.name,
@@ -99,11 +94,9 @@ async function getOpenIssues(labels = '', perPage = 10) {
       sort: 'created',
       direction: 'desc'
     };
-
     if (labels) params.labels = labels;
 
-    const { data } = await octokit.issues.listForRepo(params);
-
+    const { data } = await getOctokit().issues.listForRepo(params);
     const issues = data
       .filter(i => !i.pull_request)
       .map(i => ({
@@ -128,9 +121,7 @@ async function getRecentMergedPRs(perPage = 10) {
   if (cached) return cached;
 
   try {
-    const octokit = await getOctokit();
-
-    const { data } = await octokit.pulls.list({
+    const { data } = await getOctokit().pulls.list({
       owner: repoConfig.owner,
       repo: repoConfig.name,
       state: 'closed',
@@ -162,14 +153,11 @@ async function getRecentMergedPRs(perPage = 10) {
 
 async function getPRDetails(prNumber) {
   try {
-    const octokit = await getOctokit();
-
-    const { data } = await octokit.pulls.get({
+    const { data } = await getOctokit().pulls.get({
       owner: repoConfig.owner,
       repo: repoConfig.name,
       pull_number: prNumber
     });
-
     return {
       number: data.number,
       title: data.title,
@@ -203,16 +191,13 @@ async function getAllIssuesByLabel(label) {
   if (cached) return cached;
 
   try {
-    const octokit = await getOctokit();
-
-    const { data } = await octokit.issues.listForRepo({
+    const { data } = await getOctokit().issues.listForRepo({
       owner: repoConfig.owner,
       repo: repoConfig.name,
       state: 'open',
       labels: label,
       per_page: 30
     });
-
     const issues = data.filter(i => !i.pull_request);
     setCache(cacheKey, issues);
     return issues;
