@@ -1,0 +1,129 @@
+<%- include('partials/header') %>
+
+<main class="flex-1">
+  <section class="py-12">
+    <div class="container-narrow max-w-4xl">
+      <h1 class="section-title mb-2">Scoring System</h1>
+      <p class="section-subtitle mb-8">How contributions are scored in the Start2Code marathon</p>
+
+      <div class="glass-card p-8 mb-8 border-l-4 border-brand-500">
+        <h2 class="text-lg font-bold text-surface-900 dark:text-white mb-3">No Base Points</h2>
+        <p class="text-surface-600 dark:text-surface-300 leading-relaxed">
+          There are no base points in START2CODE. Points are awarded <strong>only</strong> from configured scoring labels assigned to your pull request. A merged PR with no scoring labels earns <strong>0 points</strong> but is still recorded as a valid contribution.
+        </p>
+        <div class="mt-3 p-3 rounded-lg bg-surface-100 dark:bg-surface-800/50 font-mono text-sm text-surface-600 dark:text-surface-400">
+          Total Points = Sum of applicable configured label bonuses
+        </div>
+      </div>
+
+      <div class="glass-card p-8 mb-8">
+        <h2 class="text-xl font-bold text-surface-900 dark:text-white mb-6">Standard Labels</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-surface-200 dark:border-surface-700">
+                <th class="table-header px-4 py-3">Label</th>
+                <th class="table-header px-4 py-3 text-right">Points</th>
+                <th class="table-header px-4 py-3 hidden sm:table-cell">Description</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-surface-100 dark:divide-surface-800">
+              <% (typeof rules !== 'undefined' ? rules : []).filter(function(r) { return !r.label.startsWith('s2c:'); }).forEach(function(rule) { %>
+              <tr>
+                <td class="table-cell">
+                  <span class="badge-neutral font-mono"><%= rule.label %></span>
+                </td>
+                <td class="table-cell text-right font-bold text-brand-600 dark:text-brand-400"><%= rule.points %></td>
+                <td class="table-cell text-surface-500 hidden sm:table-cell"><%= rule.description || '' %></td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="glass-card p-8 mb-8">
+        <h2 class="text-xl font-bold text-surface-900 dark:text-white mb-3">S2C Evaluation Tiers</h2>
+        <p class="text-sm text-surface-500 dark:text-surface-400 mb-6">
+          S2C labels represent contribution quality tiers. If multiple S2C labels exist on the same PR, <strong>only the highest tier applies</strong>. Other non-S2C labels still stack.
+        </p>
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-surface-200 dark:border-surface-700">
+                <th class="table-header px-4 py-3">Label</th>
+                <th class="table-header px-4 py-3 text-right">Points</th>
+                <th class="table-header px-4 py-3 hidden sm:table-cell">Description</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-surface-100 dark:divide-surface-800">
+              <% (typeof rules !== 'undefined' ? rules : []).filter(function(r) { return r.label.startsWith('s2c:'); }).sort(function(a,b){return a.points-b.points;}).forEach(function(rule) { %>
+              <tr>
+                <td class="table-cell">
+                  <span class="badge-brand font-mono"><%= rule.label %></span>
+                </td>
+                <td class="table-cell text-right font-bold text-brand-600 dark:text-brand-400"><%= rule.points %></td>
+                <td class="table-cell text-surface-500 hidden sm:table-cell"><%= rule.description || '' %></td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="glass-card p-8 mb-8">
+        <h2 class="text-xl font-bold text-surface-900 dark:text-white mb-6">Scoring Examples</h2>
+        <div class="space-y-6">
+          <div class="p-4 rounded-xl bg-surface-50 dark:bg-surface-800/50">
+            <h3 class="font-semibold text-surface-900 dark:text-white text-sm mb-2">Example 1: Standard labels</h3>
+            <div class="flex flex-wrap gap-1.5 mb-2">
+              <span class="badge-neutral font-mono text-xs">feature</span>
+              <span class="badge-neutral font-mono text-xs">frontend</span>
+            </div>
+            <div class="font-mono text-sm text-surface-600 dark:text-surface-400">
+              feature = 25 + frontend = 15 = <strong class="text-brand-600 dark:text-brand-400">40 points</strong>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-surface-50 dark:bg-surface-800/50">
+            <h3 class="font-semibold text-surface-900 dark:text-white text-sm mb-2">Example 2: S2C + standard label</h3>
+            <div class="flex flex-wrap gap-1.5 mb-2">
+              <span class="badge-brand font-mono text-xs">s2c:meaningful-improvement</span>
+              <span class="badge-neutral font-mono text-xs">frontend</span>
+            </div>
+            <div class="font-mono text-sm text-surface-600 dark:text-surface-400">
+              s2c:meaningful-improvement = 50 + frontend = 15 = <strong class="text-brand-600 dark:text-brand-400">65 points</strong>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-surface-50 dark:bg-surface-800/50">
+            <h3 class="font-semibold text-surface-900 dark:text-white text-sm mb-2">Example 3: Multiple S2C labels (highest only)</h3>
+            <div class="flex flex-wrap gap-1.5 mb-2">
+              <span class="badge-brand font-mono text-xs">s2c:bug-fix</span>
+              <span class="badge-brand font-mono text-xs">s2c:meaningful-improvement</span>
+            </div>
+            <div class="font-mono text-sm text-surface-600 dark:text-surface-400">
+              Highest S2C = s2c:meaningful-improvement = <strong class="text-brand-600 dark:text-brand-400">50 points</strong>
+              <br>
+              <span class="text-surface-400">(s2c:bug-fix = 25 is suppressed)</span>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-surface-50 dark:bg-surface-800/50">
+            <h3 class="font-semibold text-surface-900 dark:text-white text-sm mb-2">Example 4: No scoring labels</h3>
+            <div class="flex flex-wrap gap-1.5 mb-2">
+              <span class="badge-neutral font-mono text-xs">random-label</span>
+            </div>
+            <div class="font-mono text-sm text-surface-600 dark:text-surface-400">
+              No configured scoring rule = <strong class="text-brand-600 dark:text-brand-400">0 points</strong>
+              <br>
+              <span class="text-surface-400">The contribution is still recorded.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<%- include('partials/footer') %>

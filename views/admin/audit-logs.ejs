@@ -1,0 +1,82 @@
+<%- include('../partials/header') %>
+<%- include('../partials/admin-nav', { activeTab: 'audit' }) %>
+
+<main class="flex-1 pb-16">
+  <div class="container-narrow">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div>
+        <h1 class="section-title">Audit Logs</h1>
+        <p class="section-subtitle">Immutable chronological trail of all administrative actions and point modifications</p>
+      </div>
+    </div>
+
+    <div class="glass-card overflow-hidden">
+      <% if (logs && logs.length > 0) { %>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="border-b border-surface-200 dark:border-surface-700 text-xs text-surface-400 uppercase bg-surface-100/50 dark:bg-surface-800/50">
+              <th class="py-3 px-4">Action</th>
+              <th class="py-3 px-4">Admin</th>
+              <th class="py-3 px-4">Target</th>
+              <th class="py-3 px-4">Reason / Notes</th>
+              <th class="py-3 px-4">Value Changes</th>
+              <th class="py-3 px-4 text-right">Timestamp</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-surface-100 dark:divide-surface-800 text-xs">
+            <% logs.forEach(function(l) { %>
+            <tr class="hover:bg-surface-50 dark:hover:bg-surface-800/40 transition-colors">
+              <td class="py-3 px-4 font-mono font-semibold">
+                <% if (l.action === 'manual_adjustment') { %>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-amber-600 bg-amber-500/10 font-mono">manual_adjustment</span>
+                <% } else if (l.action === 'approve_contribution') { %>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-emerald-600 bg-emerald-500/10 font-mono">approve</span>
+                <% } else if (l.action === 'reject_contribution') { %>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-rose-600 bg-rose-500/10 font-mono">reject</span>
+                <% } else if (l.action === 'update_point_rule') { %>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-brand-600 bg-brand-500/10 font-mono">update_rule</span>
+                <% } else { %>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-surface-600 bg-surface-200 dark:bg-surface-700 font-mono"><%= l.action %></span>
+                <% } %>
+              </td>
+              <td class="py-3 px-4 font-medium text-surface-900 dark:text-white">
+                <%= l.adminUserId %>
+              </td>
+              <td class="py-3 px-4 font-mono text-surface-500 dark:text-surface-400">
+                <%= l.targetType %>: <strong class="text-surface-900 dark:text-white"><%= l.targetId %></strong>
+              </td>
+              <td class="py-3 px-4 text-surface-700 dark:text-surface-300 max-w-xs truncate">
+                <%= l.reason || '—' %>
+              </td>
+              <td class="py-3 px-4 font-mono text-xs max-w-xs truncate text-surface-500">
+                <% if (l.previousValue && l.newValue) { %>
+                  <span class="text-rose-500"><%= JSON.stringify(l.previousValue) %></span> &rarr;
+                  <span class="text-emerald-500"><%= JSON.stringify(l.newValue) %></span>
+                <% } else if (l.newValue) { %>
+                  <span class="text-emerald-500"><%= JSON.stringify(l.newValue) %></span>
+                <% } else { %>
+                  —
+                <% } %>
+              </td>
+              <td class="py-3 px-4 text-right text-surface-400 whitespace-nowrap">
+                <%= l.timestamp ? (typeof formatRelativeTime === 'function' ? formatRelativeTime(l.timestamp) : l.timestamp) : '—' %>
+              </td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+      <% } else { %>
+      <div class="text-center py-12">
+        <svg class="w-12 h-12 mx-auto text-surface-300 dark:text-surface-600 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <p class="text-surface-400">No administrative audit logs recorded yet.</p>
+      </div>
+      <% } %>
+    </div>
+  </div>
+</main>
+
+<script src="/js/admin.js"></script>
+
+<%- include('../partials/footer') %>

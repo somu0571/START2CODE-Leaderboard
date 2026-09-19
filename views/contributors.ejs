@@ -1,0 +1,29 @@
+<%- include('partials/header') %>
+
+<main class="flex-1">
+  <section class="py-12">
+    <div class="container-narrow">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h1 class="section-title">Leaderboard</h1>
+          <p class="section-subtitle">All contributors ranked by points</p>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <div class="relative max-w-md">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-surface-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="leaderboard-search" class="input-field pl-10" placeholder="Search contributors...">
+        </div>
+      </div>
+
+      <div class="glass-card overflow-hidden" id="leaderboard-container">
+        <%- include('partials/leaderboard-table', { leaderboard, formatRelativeTime }) %>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="/js/leaderboard.js"></script>
+
+<%- include('partials/footer') %>

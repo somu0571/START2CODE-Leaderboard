@@ -1,0 +1,24 @@
+<section class="relative overflow-hidden py-4">
+  <div class="container-narrow">
+    <div class="glass-card px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-sm">
+      <div class="flex items-center gap-3">
+        <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+        <span class="font-semibold text-surface-700 dark:text-surface-200">
+          <%= typeof event !== 'undefined' ? event.fullName : 'Start2Code' %>
+        </span>
+      </div>
+      <div class="flex items-center gap-4 text-surface-500 dark:text-surface-400">
+        <span>19 Sep &ndash; 27 Sep 2026</span>
+        <span class="badge-brand">
+          <% if (typeof daysRemaining !== 'undefined' && daysRemaining > 0) { %>
+            <%= daysRemaining %> days left
+          <% } else if (typeof daysRemaining !== 'undefined' && daysRemaining === 0) { %>
+            Final day
+          <% } else { %>
+            Event concluded
+          <% } %>
+        </span>
+      </div>
+    </div>
+  </div>
+</section>

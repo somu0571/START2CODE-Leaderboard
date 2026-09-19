@@ -1,0 +1,177 @@
+<%- include('../partials/header') %>
+<%- include('../partials/admin-nav', { activeTab: 'dashboard' }) %>
+
+<main class="flex-1 pb-16">
+  <div class="container-narrow">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div>
+        <h1 class="section-title">Dashboard Overview</h1>
+        <p class="section-subtitle">Real-time status of START2CODE contributions and operations</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="quick-resync-btn" class="btn-primary text-sm flex items-center gap-2">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          Resync PR
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Stats Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+      <div class="stat-card">
+        <div class="stat-value"><%= (stats && stats.totalContributors) || 0 %></div>
+        <div class="stat-label">Contributors</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value"><%= (stats && stats.totalMergedPRs) || 0 %></div>
+        <div class="stat-label">Merged PRs</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value"><%= (stats && stats.totalPointsAwarded) || 0 %></div>
+        <div class="stat-label">Points Awarded</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value"><%= (stats && stats.averagePointsPerPR) ? Number(stats.averagePointsPerPR).toFixed(1) : '0.0' %></div>
+        <div class="stat-label">Avg Pts / PR</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value text-emerald-500"><%= (stats && stats.marathonDay) ? 'Day ' + stats.marathonDay : 'Day 1' %></div>
+        <div class="stat-label">Marathon Status</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value text-amber-500"><%= (stats && stats.daysRemaining !== undefined) ? stats.daysRemaining + 'd' : '7d' %></div>
+        <div class="stat-label">Remaining</div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Left 2 Cols: Recent Contributions -->
+      <div class="lg:col-span-2 space-y-6">
+        <div class="glass-card p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold text-surface-900 dark:text-white">Recent Contributions</h2>
+            <a href="/admin/contributions" class="text-xs text-brand-600 dark:text-brand-400 font-medium hover:underline">View All &rarr;</a>
+          </div>
+
+          <% if (recentContributions && recentContributions.length > 0) { %>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead>
+                <tr class="border-b border-surface-200 dark:border-surface-700 text-xs text-surface-400 uppercase">
+                  <th class="py-2.5 px-3">PR</th>
+                  <th class="py-2.5 px-3">Contributor</th>
+                  <th class="py-2.5 px-3">Points</th>
+                  <th class="py-2.5 px-3">Status</th>
+                  <th class="py-2.5 px-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-surface-100 dark:divide-surface-800">
+                <% recentContributions.forEach(function(c) { %>
+                <tr class="hover:bg-surface-50 dark:hover:bg-surface-800/40 transition-colors">
+                  <td class="py-3 px-3 font-mono font-medium">
+                    <a href="<%= c.prUrl %>" target="_blank" rel="noopener" class="text-brand-600 dark:text-brand-400 hover:underline">#<%= c.prNumber %></a>
+                  </td>
+                  <td class="py-3 px-3">
+                    <div class="flex items-center gap-2">
+                      <span class="font-medium text-surface-900 dark:text-white">@<%= c.githubUsername %></span>
+                    </div>
+                  </td>
+                  <td class="py-3 px-3 font-bold text-surface-900 dark:text-white">
+                    <%= c.totalPoints %>
+                  </td>
+                  <td class="py-3 px-3">
+                    <% if (c.status === 'awarded') { %>
+                      <span class="badge badge-success text-xs">Awarded</span>
+                    <% } else if (c.status === 'pending-approval') { %>
+                      <span class="badge badge-warning text-xs">Pending</span>
+                    <% } else { %>
+                      <span class="badge badge-danger text-xs"><%= c.status %></span>
+                    <% } %>
+                  </td>
+                  <td class="py-3 px-3 text-right space-x-1">
+                    <% if (c.status !== 'awarded') { %>
+                      <button onclick="approveContribution('<%= c.id %>')" class="px-2 py-1 text-xs font-semibold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20">Approve</button>
+                    <% } %>
+                    <% if (c.status !== 'rejected') { %>
+                      <button onclick="rejectContribution('<%= c.id %>')" class="px-2 py-1 text-xs font-semibold rounded bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20">Reject</button>
+                    <% } %>
+                  </td>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+          <% } else { %>
+          <p class="text-sm text-surface-400 text-center py-8">No contributions logged yet.</p>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Right 1 Col: Recent Activity & Quick Info -->
+      <div class="space-y-6">
+        <!-- Event Leads Card -->
+        <div class="glass-card p-6">
+          <h2 class="text-base font-bold text-surface-900 dark:text-white mb-3">Event Leads</h2>
+          <div class="space-y-3">
+            <% (event.leads || []).forEach(function(lead) { %>
+            <div class="flex items-center gap-3 p-3 rounded-xl bg-surface-100/50 dark:bg-surface-800/50">
+              <div class="w-8 h-8 rounded-full bg-brand-500/20 text-brand-600 flex items-center justify-center font-bold text-sm">
+                <%= lead.charAt(0) %>
+              </div>
+              <div>
+                <div class="text-sm font-semibold text-surface-900 dark:text-white"><%= lead %></div>
+                <div class="text-xs text-surface-400"><%= event.organizer %></div>
+              </div>
+            </div>
+            <% }); %>
+          </div>
+        </div>
+
+        <!-- Recent Audit Activity -->
+        <div class="glass-card p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-base font-bold text-surface-900 dark:text-white">Recent Audit Logs</h2>
+            <a href="/admin/audit-logs" class="text-xs text-brand-600 dark:text-brand-400 font-medium hover:underline">All &rarr;</a>
+          </div>
+
+          <% if (recentLogs && recentLogs.length > 0) { %>
+          <div class="space-y-3">
+            <% recentLogs.slice(0, 5).forEach(function(log) { %>
+            <div class="p-2.5 rounded-lg bg-surface-100/40 dark:bg-surface-800/40 text-xs">
+              <div class="flex items-center justify-between font-mono text-surface-400 mb-1">
+                <span><%= log.action %></span>
+                <span><%= typeof formatRelativeTime === 'function' ? formatRelativeTime(log.timestamp) : '' %></span>
+              </div>
+              <p class="text-surface-700 dark:text-surface-300 truncate"><%= log.reason || log.adminUserId %></p>
+            </div>
+            <% }); %>
+          </div>
+          <% } else { %>
+          <p class="text-xs text-surface-400 text-center py-4">No audit logs recorded yet.</p>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Resync PR Modal -->
+<div id="resync-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
+  <div class="glass-card p-6 max-w-md w-full mx-4 shadow-2xl">
+    <h3 class="text-lg font-bold text-surface-900 dark:text-white mb-2">Resync Pull Request</h3>
+    <p class="text-sm text-surface-500 dark:text-surface-400 mb-4">Fetch PR details from GitHub REST API, recalculate points, and update contributor standing.</p>
+    <div class="mb-4">
+      <label class="block text-xs font-semibold text-surface-600 dark:text-surface-300 mb-1">PR Number</label>
+      <input type="number" id="resync-pr-input" placeholder="e.g. 42" class="input-field" min="1">
+    </div>
+    <div class="flex justify-end gap-2">
+      <button onclick="closeResyncModal()" class="btn-secondary text-sm">Cancel</button>
+      <button onclick="submitResync()" id="submit-resync-btn" class="btn-primary text-sm">Resync PR</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/admin.js"></script>
+
+<%- include('../partials/footer') %>

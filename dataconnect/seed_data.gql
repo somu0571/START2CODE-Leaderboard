@@ -1,0 +1,28 @@
+mutation CreateSeedData @transaction {
+  user_insertMany(data: [
+    { username: "alice_dev", email: "alice@example.com" },
+    { username: "bob_coder", email: "bob@example.com" },
+    { username: "charlie_test", email: "charlie@example.com" }
+  ])
+  
+  leaderboardCategory_insertMany(data: [
+    { name: "Global", description: "All-time best scores" },
+    { name: "Monthly", description: "Best scores for current month" },
+    { name: "Casual", description: "Casual play mode" }
+  ])
+
+  season_insertMany(data: [
+    { name: "Spring 2024", startDate: "2024-03-01T00:00:00Z", endDate: "2024-05-31T23:59:59Z", isCurrent: true },
+    { name: "Winter 2023", startDate: "2023-12-01T00:00:00Z", endDate: "2024-02-29T23:59:59Z", isCurrent: false }
+  ])
+
+  score_insertMany(data: [
+    { value: 1500, submittedAt: "2024-03-10T12:00:00Z", user: { id: "00000000-0000-0000-0000-000000000000" }, category: { id: "00000000-0000-0000-0000-000000000000" }, season: { id: "00000000-0000-0000-0000-000000000000" } },
+    { value: 2300, submittedAt: "2024-03-11T14:30:00Z", user: { id: "00000000-0000-0000-0000-000000000001" }, category: { id: "00000000-0000-0000-0000-000000000000" }, season: { id: "00000000-0000-0000-0000-000000000000" } }
+  ])
+
+  rankSnapshot_insertMany(data: [
+    { rankPosition: 1, scoreValue: 2300, user: { id: "00000000-0000-0000-0000-000000000001" }, category: { id: "00000000-0000-0000-0000-000000000000" }, season: { id: "00000000-0000-0000-0000-000000000000" } },
+    { rankPosition: 2, scoreValue: 1500, user: { id: "00000000-0000-0000-0000-000000000000" }, category: { id: "00000000-0000-0000-0000-000000000000" }, season: { id: "00000000-0000-0000-0000-000000000000" } }
+  ])
+}

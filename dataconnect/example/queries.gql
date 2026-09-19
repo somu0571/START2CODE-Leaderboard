@@ -1,0 +1,145 @@
+mutation CreateUser @auth(level: USER) {
+  user_insert(data: {
+    id_expr: "auth.uid",
+    username: "newuser",
+    email: "user@example.com"
+  })
+}
+
+mutation UpdateUser @auth(level: USER) {
+  user_update(key: {id_expr: "auth.uid"}, data: {username: "updated_username"})
+}
+
+mutation DeleteUser @auth(level: USER) {
+  user_delete(key: {id_expr: "auth.uid"})
+}
+
+query GetCurrentUser @auth(level: USER) {
+  user(key: {id_expr: "auth.uid"}) {
+    username
+    email
+  }
+}
+
+query ListAllUsers @auth(level: PUBLIC, insecureReason: "Public leaderboard access") {
+  users {
+    username
+  }
+}
+
+mutation CreateCategory @auth(level: PUBLIC, insecureReason: "Publicly accessible category definitions") {
+  leaderboardCategory_insert(data: {
+    name: "Speedrun",
+    description: "Fastest completion times"
+  })
+}
+
+mutation UpdateCategory @auth(level: PUBLIC, insecureReason: "Publicly accessible category definitions") {
+  leaderboardCategory_update(id: "00000000-0000-0000-0000-000000000000", data: {isActive: true})
+}
+
+mutation DeleteCategory @auth(level: PUBLIC, insecureReason: "Publicly accessible category definitions") {
+  leaderboardCategory_delete(id: "00000000-0000-0000-0000-000000000000")
+}
+
+query GetCategory @auth(level: PUBLIC, insecureReason: "Publicly accessible category definitions") {
+  leaderboardCategory(id: "00000000-0000-0000-0000-000000000000") {
+    name
+  }
+}
+
+query ListCategories @auth(level: PUBLIC, insecureReason: "Publicly accessible category definitions") {
+  leaderboardCategories {
+    name
+  }
+}
+
+mutation CreateSeason @auth(level: PUBLIC, insecureReason: "Public season details") {
+  season_insert(data: {
+    name: "Spring 2024",
+    startDate: "2024-03-01T00:00:00Z",
+    endDate: "2024-05-31T23:59:59Z"
+  })
+}
+
+mutation UpdateSeason @auth(level: PUBLIC, insecureReason: "Public season details") {
+  season_update(id: "00000000-0000-0000-0000-000000000000", data: {isCurrent: false})
+}
+
+mutation DeleteSeason @auth(level: PUBLIC, insecureReason: "Public season details") {
+  season_delete(id: "00000000-0000-0000-0000-000000000000")
+}
+
+query GetSeason @auth(level: PUBLIC, insecureReason: "Public season details") {
+  season(id: "00000000-0000-0000-0000-000000000000") {
+    name
+  }
+}
+
+query ListSeasons @auth(level: PUBLIC, insecureReason: "Public season details") {
+  seasons {
+    name
+  }
+}
+
+mutation CreateScore @auth(level: USER) {
+  score_insert(data: {
+    value: 1000,
+    submittedAt: "2024-01-01T12:00:00Z",
+    userId_expr: "auth.uid",
+    categoryId: "00000000-0000-0000-0000-000000000000",
+    seasonId: "00000000-0000-0000-0000-000000000000"
+  })
+}
+
+mutation UpdateScore @auth(level: USER) {
+  score_update(id: "00000000-0000-0000-0000-000000000000", data: {value: 1200})
+}
+
+mutation DeleteScore @auth(level: USER) {
+  score_delete(id: "00000000-0000-0000-0000-000000000000")
+}
+
+query GetScore @auth(level: USER) {
+  score(id: "00000000-0000-0000-0000-000000000000") {
+    value
+  }
+}
+
+query ListUserScores @auth(level: USER) {
+  scores(where: {userId: {eq_expr: "auth.uid"}}) {
+    value
+    submittedAt
+  }
+}
+
+mutation CreateRank @auth(level: PUBLIC, insecureReason: "Public leaderboard snapshots") {
+  rankSnapshot_insert(data: {
+    rankPosition: 1,
+    scoreValue: 5000,
+    userId: "00000000-0000-0000-0000-000000000000",
+    categoryId: "00000000-0000-0000-0000-000000000000",
+    seasonId: "00000000-0000-0000-0000-000000000000"
+  })
+}
+
+mutation UpdateRank @auth(level: PUBLIC, insecureReason: "Public leaderboard snapshots") {
+  rankSnapshot_update(id: "00000000-0000-0000-0000-000000000000", data: {rankPosition: 2})
+}
+
+mutation DeleteRank @auth(level: PUBLIC, insecureReason: "Public leaderboard snapshots") {
+  rankSnapshot_delete(id: "00000000-0000-0000-0000-000000000000")
+}
+
+query GetRank @auth(level: PUBLIC, insecureReason: "Public leaderboard snapshots") {
+  rankSnapshot(id: "00000000-0000-0000-0000-000000000000") {
+    rankPosition
+  }
+}
+
+query ListRanks @auth(level: PUBLIC, insecureReason: "Public leaderboard snapshots") {
+  rankSnapshots {
+    rankPosition
+    scoreValue
+  }
+}

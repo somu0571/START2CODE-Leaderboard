@@ -1,0 +1,32 @@
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+  <div class="stat-card">
+    <div class="stat-value" id="stat-contributors"><%= (typeof stats !== 'undefined' && stats) ? stats.totalContributors : 0 %></div>
+    <div class="stat-label">Contributors</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value" id="stat-prs"><%= (typeof stats !== 'undefined' && stats) ? stats.totalMergedPRs : 0 %></div>
+    <div class="stat-label">Merged PRs</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value" id="stat-points"><%= (typeof stats !== 'undefined' && stats) ? stats.totalPointsAwarded : 0 %></div>
+    <div class="stat-label">Points Awarded</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value"><%= (typeof repoInfo !== 'undefined' && repoInfo) ? repoInfo.stars : 0 %></div>
+    <div class="stat-label">Repo Stars</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value"><%= (typeof repoInfo !== 'undefined' && repoInfo) ? repoInfo.openIssues : 0 %></div>
+    <div class="stat-label">Open Issues</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">
+      <% if (typeof currentDay !== 'undefined' && currentDay > 0) { %>
+        Day <%= currentDay %>
+      <% } else { %>
+        --
+      <% } %>
+    </div>
+    <div class="stat-label">Marathon Progress</div>
+  </div>
+</div>

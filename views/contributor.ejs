@@ -1,0 +1,103 @@
+<%- include('partials/header') %>
+
+<main class="flex-1">
+  <section class="py-12">
+    <div class="container-narrow">
+      <div class="glass-card p-8 md:p-12">
+        <div class="flex flex-col md:flex-row items-start gap-8">
+          <div class="flex flex-col items-center text-center md:w-64 flex-shrink-0">
+            <img src="<%= contributor.avatarUrl %>" alt="" class="w-28 h-28 rounded-full ring-4 ring-brand-200 dark:ring-brand-800 mb-4">
+            <h1 class="text-2xl font-bold text-surface-900 dark:text-white"><%= contributor.displayName || contributor.githubUsername %></h1>
+            <p class="text-surface-400 text-sm mb-3">@<%= contributor.githubUsername %></p>
+            <a href="<%= contributor.profileUrl %>" target="_blank" rel="noopener" class="btn-secondary text-sm">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+              GitHub Profile
+            </a>
+            <% if (contributor.rank) { %>
+            <div class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 font-semibold text-sm">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 7 7 7 7s3-3 5-3 5 3 5 3 0-3 2.5-3a2.5 2.5 0 0 1 0 5H18"/><path d="M5 14l-.4 2.1A2 2 0 0 0 6.6 19h10.8a2 2 0 0 0 2-2.9L19 14"/><rect x="6" y="9" width="12" height="5" rx="1"/></svg>
+              Rank #<%= contributor.rank %>
+            </div>
+            <% } %>
+          </div>
+
+          <div class="flex-1 w-full">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+              <div class="stat-card">
+                <div class="stat-value"><%= contributor.totalPoints %></div>
+                <div class="stat-label">Total Points</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value"><%= contributor.mergedPRs %></div>
+                <div class="stat-label">Merged PRs</div>
+              </div>
+              <div class="stat-card">
+                <div class="text-xl font-bold text-surface-700 dark:text-surface-200">
+                  <% if (contributor.firstContributionAt) { %>
+                    <%= formatDate(contributor.firstContributionAt) %>
+                  <% } else { %>--<% } %>
+                </div>
+                <div class="stat-label">First Contribution</div>
+              </div>
+              <div class="stat-card">
+                <div class="text-xl font-bold text-surface-700 dark:text-surface-200">
+                  <% if (contributor.lastContributionAt) { %>
+                    <%= formatRelativeTime(contributor.lastContributionAt) %>
+                  <% } else { %>--<% } %>
+                </div>
+                <div class="stat-label">Last Active</div>
+              </div>
+            </div>
+
+            <h2 class="text-xl font-bold text-surface-900 dark:text-white mb-4">Contribution History</h2>
+            <% if (contributor.contributions && contributor.contributions.length > 0) { %>
+            <div class="space-y-3">
+              <% contributor.contributions.forEach(function(c) { %>
+              <div class="glass-card p-5 hover:border-brand-300 dark:hover:border-brand-700 transition-colors">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="min-w-0">
+                    <a href="<%= c.prUrl %>" target="_blank" rel="noopener" class="font-semibold text-surface-900 dark:text-white hover:text-brand-600 transition-colors text-sm">
+                      #<%= c.prNumber %> &mdash; <%= c.prTitle %>
+                    </a>
+                    <div class="flex flex-wrap gap-1.5 mt-2">
+                      <% (c.labels || []).forEach(function(label) { %>
+                      <span class="badge-neutral text-xs">
+                        <%= label.name %>
+                        <% if (label.points > 0) { %> (+<%= label.points %>)<% } %>
+                        <% if (label.suppressed) { %> (suppressed)<% } %>
+                      </span>
+                      <% }); %>
+                    </div>
+                    <div class="text-xs text-surface-400 mt-2">
+                      <% if (c.mergedAt) { %>Merged <%= formatRelativeTime(c.mergedAt) %><% } %>
+                      <% if (!c.countsTowardsMarathon) { %> &middot; <span class="text-amber-500">Off-window</span><% } %>
+                      <% if (c.flagged) { %> &middot; <span class="text-red-500">Flagged</span><% } %>
+                    </div>
+                  </div>
+                  <div class="text-right flex-shrink-0">
+                    <div class="text-lg font-bold gradient-text">+<%= c.totalPoints %></div>
+                    <% if (c.status === 'awarded') { %>
+                      <span class="badge-success text-xs">Awarded</span>
+                    <% } else if (c.status === 'pending-approval') { %>
+                      <span class="badge-warning text-xs">Pending</span>
+                    <% } else if (c.status === 'rejected') { %>
+                      <span class="badge-danger text-xs">Rejected</span>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+              <% }); %>
+            </div>
+            <% } else { %>
+            <div class="text-center py-8 text-surface-400">
+              <p>No contributions recorded yet.</p>
+            </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<%- include('partials/footer') %>

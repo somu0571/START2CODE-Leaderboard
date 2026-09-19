@@ -1,0 +1,83 @@
+<%- include('../partials/header') %>
+<%- include('../partials/admin-nav', { activeTab: 'webhooks' }) %>
+
+<main class="flex-1 pb-16">
+  <div class="container-narrow">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div>
+        <h1 class="section-title">GitHub Webhook Events</h1>
+        <p class="section-subtitle">Real-time incoming webhook payload delivery log and execution results</p>
+      </div>
+      <div>
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          Listening on /api/github/webhook
+        </span>
+      </div>
+    </div>
+
+    <div class="glass-card overflow-hidden">
+      <% if (webhookEvents && webhookEvents.length > 0) { %>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="border-b border-surface-200 dark:border-surface-700 text-xs text-surface-400 uppercase bg-surface-100/50 dark:bg-surface-800/50">
+              <th class="py-3 px-4 w-44">Delivery ID</th>
+              <th class="py-3 px-4">Event &amp; Action</th>
+              <th class="py-3 px-4 text-center">Status</th>
+              <th class="py-3 px-4">Details / Result</th>
+              <th class="py-3 px-4 text-right">Received At</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-surface-100 dark:divide-surface-800 font-mono text-xs">
+            <% webhookEvents.forEach(function(evt) { %>
+            <tr class="hover:bg-surface-50 dark:hover:bg-surface-800/40 transition-colors">
+              <td class="py-3 px-4 text-surface-500 dark:text-surface-400 truncate max-w-xs font-mono">
+                <%= evt.deliveryId %>
+              </td>
+              <td class="py-3 px-4 font-mono font-medium text-surface-900 dark:text-white">
+                <span class="text-brand-600 dark:text-brand-400"><%= evt.event || 'pull_request' %></span>
+                <% if (evt.action) { %>
+                  <span class="text-surface-400">.<%= evt.action %></span>
+                <% } %>
+              </td>
+              <td class="py-3 px-4 text-center">
+                <% if (evt.error) { %>
+                  <span class="badge badge-danger text-xs font-sans">Error</span>
+                <% } else if (evt.processed) { %>
+                  <span class="badge badge-success text-xs font-sans">Processed</span>
+                <% } else { %>
+                  <span class="badge text-xs font-sans bg-surface-200 dark:bg-surface-700 text-surface-600 dark:text-surface-300">Ignored</span>
+                <% } %>
+              </td>
+              <td class="py-3 px-4 font-sans text-xs text-surface-600 dark:text-surface-300 max-w-md truncate">
+                <% if (evt.error) { %>
+                  <span class="text-rose-500 font-medium"><%= evt.error %></span>
+                <% } else if (evt.prNumber) { %>
+                  <span>PR #<%= evt.prNumber %> by @<%= evt.sender || evt.githubUsername %></span>
+                <% } else { %>
+                  <span><%= evt.status || 'OK' %></span>
+                <% } %>
+              </td>
+              <td class="py-3 px-4 text-right font-sans text-xs text-surface-400 whitespace-nowrap">
+                <%= evt.receivedAt ? (typeof formatRelativeTime === 'function' ? formatRelativeTime(evt.receivedAt) : evt.receivedAt) : '—' %>
+              </td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+      <% } else { %>
+      <div class="text-center py-12">
+        <svg class="w-12 h-12 mx-auto text-surface-300 dark:text-surface-600 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <p class="text-surface-400">No webhook events received yet.</p>
+        <p class="text-xs text-surface-400 mt-1">Events will appear here when GitHub sends webhooks to your endpoint.</p>
+      </div>
+      <% } %>
+    </div>
+  </div>
+</main>
+
+<script src="/js/admin.js"></script>
+
+<%- include('../partials/footer') %>

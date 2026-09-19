@@ -1,0 +1,134 @@
+<%- include('partials/header') %>
+
+  <% var r=(typeof repo !=='undefined' && repo) ? repo : { name: 'InternPilot' ,
+    description: 'AI-driven internship management platform with smart candidate workflows, multi-role auth, OTP, Google OAuth 2.0, automated status notifications.'
+    , url: 'https://github.com/somu0571/InternPilot' , liveDemo: 'https://internpilot-mv9c.onrender.com/' , features:
+    [ 'Candidate registration & profiles' , 'OTP & Google OAuth 2.0 authentication' , 'Internship discovery & search'
+    , 'End-to-end application tracking' , 'Company profiles & role-based dashboards'
+    , 'Automated status email notifications' ], techStack: [ 'Node.js' , 'Express.js' , 'MongoDB' , 'Mongoose'
+    , 'Passport.js' , 'Google OAuth 2.0' , 'Tailwind CSS' , 'JavaScript' , 'Nodemailer' ], maintainers:
+    [ 'Somsubhra Chatterjee' , 'Vishnu Shankar Tripathi' , 'Tanmoy Saha' ] }; var featuresList=r.features || []; var
+    techList=r.techStack || []; var maintainersList=r.maintainers || []; %>
+
+    <main class="flex-1">
+      <section class="py-12">
+        <div class="container-narrow max-w-4xl">
+          <h1 class="section-title mb-2">
+            <%= r.name || 'InternPilot' %>
+          </h1>
+          <p class="section-subtitle mb-8">AI-powered full-stack internship portal connecting students and companies</p>
+
+          <%- include('partials/repo-card', { repoInfo: typeof repoInfo !=='undefined' ? repoInfo : null, repo: r }) %>
+
+            <div class="glass-card p-8 mt-6 mb-8 shadow-lg">
+              <h2 class="text-xl font-bold text-surface-900 dark:text-white mb-4">Overview</h2>
+              <p class="text-surface-600 dark:text-surface-300 leading-relaxed mb-6">
+                <%= r.description %>
+              </p>
+              <div class="flex flex-wrap gap-3">
+                <a href="<%= r.url %>" target="_blank" rel="noopener" class="btn-primary text-sm">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path
+                      d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+                    <path d="M9 18c-4.51 2-5-2-7-2" />
+                  </svg>
+                  View on GitHub
+                </a>
+                <% if (r.liveDemo) { %>
+                  <a href="<%= r.liveDemo %>" target="_blank" rel="noopener" class="btn-secondary text-sm">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                      <polyline points="15 3 21 3 21 9" />
+                      <line x1="10" y1="14" x2="21" y2="3" />
+                    </svg>
+                    Live Demo
+                  </a>
+                  <% } %>
+              </div>
+            </div>
+
+            <% if (featuresList.length> 0) { %>
+              <div class="glass-card p-8 mb-8 shadow-lg">
+                <h2 class="text-xl font-bold text-surface-900 dark:text-white mb-4">Key Features</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <% featuresList.forEach(function(feature) { %>
+                    <div class="flex items-center gap-2 text-sm text-surface-600 dark:text-surface-300">
+                      <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      <%= feature %>
+                    </div>
+                    <% }); %>
+                </div>
+              </div>
+              <% } %>
+
+                <% if (techList.length> 0) { %>
+                  <div class="glass-card p-8 mb-8 shadow-lg">
+                    <h2 class="text-xl font-bold text-surface-900 dark:text-white mb-4">Tech Stack</h2>
+                    <div class="flex flex-wrap gap-2">
+                      <% techList.forEach(function(tech) { %>
+                        <span class="badge-neutral text-xs px-3 py-1 font-medium">
+                          <%= tech %>
+                        </span>
+                        <% }); %>
+                    </div>
+                  </div>
+                  <% } %>
+
+                    <% if (typeof languages !=='undefined' && languages && Object.keys(languages).length> 0) { %>
+                      <% var totalBytes=Object.values(languages).reduce(function(a, b) { return a + (typeof b==='number'
+                        ? b : 0); }, 0); %>
+                        <% if (totalBytes> 0) { %>
+                          <div class="glass-card p-8 mb-8 shadow-lg">
+                            <h2 class="text-xl font-bold text-surface-900 dark:text-white mb-4">Languages</h2>
+                            <div class="space-y-3">
+                              <% Object.entries(languages) .sort(function(a, b) { return (b[1] || 0) - (a[1] || 0); })
+                                .forEach(function(entry) { var bytes=typeof entry[1]==='number' ? entry[1] : 0; var
+                                pct=(totalBytes> 0 ? (bytes / totalBytes * 100) : 0).toFixed(1);
+                                %>
+                                <div>
+                                  <div class="flex items-center justify-between text-sm mb-1">
+                                    <span class="font-medium text-surface-700 dark:text-surface-300">
+                                      <%= entry[0] %>
+                                    </span>
+                                    <span class="text-surface-400 font-mono text-xs">
+                                      <%= pct %>%
+                                    </span>
+                                  </div>
+                                  <div
+                                    class="w-full h-2 bg-surface-200 dark:bg-surface-700 rounded-full overflow-hidden">
+                                    <div class="h-full bg-brand-500 rounded-full" style="width: <%= pct %>%"></div>
+                                  </div>
+                                </div>
+                                <% }); %>
+                            </div>
+                          </div>
+                          <% } %>
+                            <% } %>
+
+                              <% if (maintainersList.length> 0) { %>
+                                <div class="glass-card p-8 shadow-lg">
+                                  <h2 class="text-xl font-bold text-surface-900 dark:text-white mb-4">Maintainers</h2>
+                                  <div class="flex flex-wrap gap-3">
+                                    <% maintainersList.forEach(function(m) { %>
+                                      <div
+                                        class="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-surface-100/50 dark:bg-surface-800/50 border border-surface-200/50 dark:border-surface-700/50">
+                                        <div
+                                          class="w-8 h-8 rounded-full bg-brand-100 dark:bg-brand-900/40 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-sm">
+                                          <%= m ? m.charAt(0) : '?' %>
+                                        </div>
+                                        <span class="font-medium text-sm text-surface-700 dark:text-surface-300">
+                                          <%= m %>
+                                        </span>
+                                      </div>
+                                      <% }); %>
+                                  </div>
+                                </div>
+                                <% } %>
+        </div>
+      </section>
+    </main>
+
+    <%- include('partials/footer') %>
