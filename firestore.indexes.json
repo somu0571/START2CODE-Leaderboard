@@ -1,0 +1,38 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "contributors",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "totalPoints", "order": "DESCENDING" },
+        { "fieldPath": "mergedPRs", "order": "DESCENDING" },
+        { "fieldPath": "firstContributionAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "contributions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "mergedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "contributions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "githubUsername", "order": "ASCENDING" },
+        { "fieldPath": "mergedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "contributions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "githubId", "order": "ASCENDING" },
+        { "fieldPath": "mergedAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
