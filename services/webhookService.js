@@ -105,16 +105,9 @@ async function processMergedPR(payload, deliveryId) {
 async function processLabelEvent(payload, action) {
   const pr = payload.pull_request;
   const repo = payload.repository;
-  const label = payload.label;
 
-  if (!pr.merged) return { status: 'skipped', message: 'PR not merged' };
-
-  const requireApproval = process.env.REQUIRE_APPROVAL_LABEL === 'true';
-  if (!requireApproval) return { status: 'skipped', message: 'Approval gate disabled' };
-
-  const approvalLabel = (process.env.APPROVAL_LABEL || 'S2C approved').toLowerCase();
-  if (label.name.toLowerCase() !== approvalLabel) {
-    return { status: 'skipped', message: 'Not the approval label' };
+  if (!pr.merged) {
+    return { status: 'skipped', message: 'PR not merged' };
   }
 
   const contributionId = buildContributionId(repo.full_name, pr.number);
@@ -124,32 +117,44 @@ async function processLabelEvent(payload, action) {
     return { status: 'skipped', message: 'Contribution not found' };
   }
 
-  if (action === 'labeled' && existing.status === 'pending-approval') {
-    const prLabels = (pr.labels || []).map(l => l.name);
-    const { totalPoints, labelBreakdown } = await pointsService.calculateContributionPoints(prLabels);
+  // GitHub sends the CURRENT complete label list in the webhook payload.
+  const prLabels = (pr.labels || []).map(l => l.name);
 
-    await contributionService.updateContribution(contributionId, {
-      status: 'awarded',
-      totalPoints,
-      labels: labelBreakdown
-    });
+  const { totalPoints, labelBreakdown } =
+    await pointsService.calculateContributionPoints(prLabels);
 
-    await contributorService.updateAggregates(existing.githubId);
+  const requireApproval =
+    process.env.REQUIRE_APPROVAL_LABEL === 'true';
 
-    return { status: 'approved', points: totalPoints };
+  const approvalLabel =
+    (process.env.APPROVAL_LABEL || 'S2C approved').toLowerCase();
+
+  const hasApproval = prLabels.some(
+    l => l.toLowerCase() === approvalLabel
+  );
+
+  let status = 'awarded';
+  let awardedPoints = totalPoints;
+
+  if (requireApproval && !hasApproval) {
+    status = 'pending-approval';
+    awardedPoints = 0;
   }
 
-  if (action === 'unlabeled' && existing.status === 'awarded') {
-    await contributionService.updateStatus(contributionId, 'pending-approval', {
-      totalPoints: 0
-    });
+  await contributionService.updateContribution(contributionId, {
+    status,
+    totalPoints: awardedPoints,
+    labels: labelBreakdown
+  });
 
-    await contributorService.updateAggregates(existing.githubId);
+  await contributorService.updateAggregates(existing.githubId);
 
-    return { status: 'unapproved' };
-  }
-
-  return { status: 'no-change' };
+  return {
+    status: 'updated',
+    points: awardedPoints,
+    labels: labelBreakdown,
+    contributionStatus: status
+  };
 }
 
 async function resyncPR(prNumber, adminEmail) {
@@ -176,44 +181,39 @@ async function resyncPR(prNumber, adminEmail) {
   });
 
   const prLabels = prData.labels.map(l => l.name);
-  const { totalPoints, labelBreakdown } = await pointsService.calculateContributionPoints(prLabels);
 
-  const requireApproval = process.env.REQUIRE_APPROVAL_LABEL === 'true';
-  const approvalLabel = (process.env.APPROVAL_LABEL || 'S2C approved').toLowerCase();
-  const hasApproval = prLabels.some(l => l.toLowerCase() === approvalLabel);
+  const { totalPoints, labelBreakdown } =
+    await pointsService.calculateContributionPoints(prLabels);
+
+  const requireApproval =
+    process.env.REQUIRE_APPROVAL_LABEL === 'true';
+
+  const approvalLabel =
+    (process.env.APPROVAL_LABEL || 'S2C approved').toLowerCase();
+
+  const hasApproval = prLabels.some(
+    l => l.toLowerCase() === approvalLabel
+  );
 
   let status = 'awarded';
   let awardedPoints = totalPoints;
+
   if (requireApproval && !hasApproval) {
     status = 'pending-approval';
     awardedPoints = 0;
   }
 
   if (existing) {
-    const previousValue = {
-      labels: existing.labels,
-      status: existing.status
-    };
-
     await contributionService.updateContribution(contributionId, {
       prTitle: prData.title,
       prBody: (prData.body || '').slice(0, 2000),
       labels: labelBreakdown,
       status,
+      totalPoints: awardedPoints,
       mergedBy: prData.mergedBy || '',
       additions: prData.additions || 0,
       deletions: prData.deletions || 0,
       changedFiles: prData.changedFiles || 0
-    });
-
-    await auditService.log({
-      adminUserId: adminEmail,
-      action: 'resync',
-      targetType: 'contribution',
-      targetId: contributionId,
-      previousValue,
-      newValue: { labels: labelBreakdown, status },
-      reason: `Manual resync of PR #${prNumber}`
     });
   } else {
     await contributionService.create({
@@ -235,21 +235,16 @@ async function resyncPR(prNumber, adminEmail) {
       changedFiles: prData.changedFiles || 0,
       deliveryId: `resync_${Date.now()}`
     });
-
-    await auditService.log({
-      adminUserId: adminEmail,
-      action: 'resync_create',
-      targetType: 'contribution',
-      targetId: contributionId,
-      previousValue: null,
-      newValue: { totalPoints: awardedPoints, status },
-      reason: `Manual resync created contribution for PR #${prNumber}`
-    });
   }
 
   await contributorService.updateAggregates(prData.user.id);
 
-  return { status: 'resynced', contributionId, points: awardedPoints };
+  return {
+    status: 'resynced',
+    contributionId,
+    points: awardedPoints,
+    labels: labelBreakdown
+  };
 }
 
 async function getWebhookEvents(limit = 50) {
@@ -259,9 +254,14 @@ async function getWebhookEvents(limit = 50) {
     .get();
 
   const events = [];
+
   snapshot.forEach(doc => {
-    events.push({ id: doc.id, ...doc.data() });
+    events.push({
+      id: doc.id,
+      ...doc.data()
+    });
   });
+
   return events;
 }
 
@@ -273,3 +273,4 @@ module.exports = {
   resyncPR,
   getWebhookEvents
 };
+
